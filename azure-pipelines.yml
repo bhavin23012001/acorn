@@ -6,33 +6,27 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-  # Step 1: Install Node.js 20
   - task: NodeTool@0
     inputs:
       versionSpec: '20.x'
     displayName: 'Install Node.js'
 
-  # Step 2: Install Dependencies
   - script: |
       npm install
     displayName: 'Install dependencies'
 
-  # Step 3: Lint Check
   - script: |
       npm run lint
     displayName: 'Run ESLint'
 
-  # Step 4: Build Modules
   - script: |
       npm run build
-    displayName: 'Build Acorn Modules (Main, Loose, Walk)'
+    displayName: 'Build Acorn Modules'
 
-  # Step 5: Run Tests
   - script: |
       npm test
     displayName: 'Run Tests'
 
-  # Step 6: Copy build output to staging folder (all dist folders)
   - task: CopyFiles@2
     inputs:
       contents: |
@@ -40,12 +34,11 @@ steps:
         acorn-loose/dist/**
         acorn-walk/dist/**
       targetFolder: '$(Build.ArtifactStagingDirectory)/dist'
-    displayName: 'Copy build output to staging folder'
+    displayName: 'Copy dist files'
 
-  # Step 7: Publish build artifacts as "drop"
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)/dist'
       ArtifactName: 'drop'
       publishLocation: 'Container'
-    displayName: 'Publish build artifacts as drop'
+    displayName: 'Publish dist as Artifact'
