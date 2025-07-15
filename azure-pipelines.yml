@@ -1,15 +1,19 @@
 trigger:
   - main
-  - master
 
 pool:
-  vmImage: ubuntu-latest
+  name: MyFreePool
+  demands:
+    - agent.name -equals MyWindowsAgent2
 
 steps:
-  - task: NodeTool@0
-    inputs:
-      versionSpec: '20.x'
-    displayName: 'Install Node.js'
+  - script: echo "Agent $(Agent.Name) is ready."
+    displayName: 'Verify Agent Name'
+
+  - script: |
+      node -v
+      npm -v
+    displayName: 'Check Node and NPM'
 
   - script: |
       npm install
@@ -17,11 +21,11 @@ steps:
 
   - script: |
       npm run lint
-    displayName: 'Run ESLint'
+    displayName: 'Run Lint'
 
   - script: |
       npm run build
-    displayName: 'Build Acorn Modules'
+    displayName: 'Run Build'
 
   - script: |
       npm test
@@ -41,4 +45,4 @@ steps:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)/dist'
       ArtifactName: 'drop'
       publishLocation: 'Container'
-    displayName: 'Publish dist as Artifact'
+    displayName: 'Publish Artifact'
