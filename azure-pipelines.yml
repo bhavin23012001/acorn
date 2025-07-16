@@ -4,7 +4,7 @@ trigger:
 pool:
   name: MyFreePool
   demands:
-    - agent.name -equals MyWindowsAgent
+    - agent.name -equals MyWindowsAgent2
 
 steps:
   - script: echo "Agent $(Agent.Name) is ready."
@@ -13,11 +13,28 @@ steps:
   - script: |
       node -v
       npm -v
-    displayName: 'Check Node and NPM'
+    displayName: 'Check Node and NPM Versions'
+
+  - task: Cache@2
+    inputs:
+      key: 'npm | "$(Agent.OS)" | package-lock.json'
+      restoreKeys: |
+        npm | "$(Agent.OS)"
+      path: $(Pipeline.Workspace)/.npm
+    displayName: 'Cache NPM packages'
 
   - script: |
-      npm install
-    displayName: 'Install dependencies'
+      rd /s /q node_modules 2>NUL
+      rd /s /q acorn\node_modules 2>NUL
+      rd /s /q acorn-loose\node_modules 2>NUL
+      rd /s /q acorn-walk\node_modules 2>NUL
+    displayName: 'Clean old node_modules (Windows)'
+
+  - script: |
+      npm ci --no-audit --no-fund
+    env:
+      npm_config_cache: $(Pipeline.Workspace)/.npm
+    displayName: 'Install dependencies (clean & fast)'
 
   - script: |
       npm run lint
